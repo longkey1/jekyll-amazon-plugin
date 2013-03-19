@@ -6,6 +6,7 @@ module Jekyll
     def initialize
       @result_cache = {}
 
+      @cache = false
       @cache_dir = ".amazon-cache/"
       @options = {
         :associate_tag     => nil,
@@ -26,7 +27,9 @@ module Jekyll
       site = context.registers[:site]
 
       #cache_dir
-      @cache_dir = site.config['amazon_cache_dir'].gsub(/\/$/, '') + '/'  if site.config['amazon_cache_dir']
+      @cache = site.config['amazon_cache'] if site.config['amazon_cache']
+      @cache_dir = site.config['amazon_cache_dir'].gsub(/\/$/, '') + '/' if site.config['amazon_cache_dir']
+      Dir::mkdir(@cache_dir) if File.exists?(@cache_dir) == false
 
       #options
       @options[:associate_tag]     = site.config['amazon_associate_tag']
@@ -36,12 +39,27 @@ module Jekyll
     end
 
     def item_lookup(asin)
-      asin.to_s.strip!
       return @result_cache[asin] if @result_cache.has_key?(asin)
-      return @result_cache[asin] = Marshal.load(File.read(@cache_dir + asin)) if File.exist?(@cache_dir + asin)
+      return @result_cache[asin] = Marshal.load(File.read(@cache_dir + asin)) if @cache && File.exist?(@cache_dir + asin)
 
       Amazon::Ecs.options = @options
-      res = Amazon::Ecs.item_lookup(asin)
+
+      recnt = 0
+      begin
+        res = Amazon::Ecs.item_lookup(asin)
+
+      #Liquid Exception HTTP Response: 503 Service Unavailable
+      rescue Amazon::RequestError => e
+        if /503/ =~ e.message && recnt < 3
+          sleep 3
+          recnt += 1
+          puts asin + " retry " + recnt.to_s
+          retry
+        else
+          raise e
+        end
+      end
+
       res.items.each do |item|
         data = {
           :title => item.get('ItemAttributes/Title').to_s.gsub(/ \[Blu-ray\]/, '').gsub(/ \(Ultimate Edition\)/, ''),
@@ -50,8 +68,8 @@ module Jekyll
           :medium_image_url => item.get('MediumImage/URL').to_s,
           :large_image_url => item.get('LargeImage/URL').to_s,
         }
-        open(@cache_dir + asin, "w"){|f| f.write(Marshal.dump(data))}
         @result_cache[asin] = data
+        open(@cache_dir + asin, "w"){|f| f.write(Marshal.dump(data))} if @cache
         break
       end
       return @result_cache[asin]
