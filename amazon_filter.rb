@@ -1,10 +1,19 @@
 require 'amazon/ecs'
+require 'pp'
 
 module Jekyll
   class AmazonResultCache
     def initialize
-      @cache_dir = ".amazon-cache/"
       @result_cache = {}
+
+      @cache_dir = ".amazon-cache/"
+      @options = {
+        :associate_tag     => nil,
+        :AWS_access_key_id => nil,
+        :AWS_secret_key    => nil,
+        :response_group    => 'Images,ItemAttributes,ItemIds',
+        :country           => 'en',
+      }
     end
 
     @@instance = AmazonResultCache.new
@@ -13,23 +22,25 @@ module Jekyll
       @@instance
     end
 
-    def set_site(context)
-      @site = context.registers[:site]
+    def setup(context)
+      site = context.registers[:site]
+
+      #cache_dir
+      @cache_dir = site.config['amazon_cache_dir'].gsub(/\/$/, '') + '/'  if site.config['amazon_cache_dir']
+
+      #options
+      @options[:associate_tag]     = site.config['amazon_associate_tag']
+      @options[:AWS_access_key_id] = site.config['amazon_access_key_id']
+      @options[:AWS_secret_key]    = site.config['amazon_secret_key']
+      @options[:country]           = site.config['amazon_country']
     end
 
     def item_lookup(asin)
       asin.to_s.strip!
       return @result_cache[asin] if @result_cache.has_key?(asin)
-      return @result_cache[asin] = Marshal.load(File.read(@site.config['amazon_cache_dir'] + asin)) if File.exist?(@site.config['amazon_cache_dir'] + asin)
+      return @result_cache[asin] = Marshal.load(File.read(@cache_dir + asin)) if File.exist?(@cache_dir + asin)
 
-      Amazon::Ecs.options = {
-        :associate_tag => @site.config['amazon_associate'],
-        :AWS_access_key_id => @site.config['amazon_key_id'],
-        :AWS_secret_key => @site.config['amazon_secret_key_id'],
-        :response_group => 'Images,ItemAttributes,ItemIds',
-        :country => @site.config['amazon_locale'],
-      }
-
+      Amazon::Ecs.options = @options
       res = Amazon::Ecs.item_lookup(asin)
       res.items.each do |item|
         data = {
@@ -39,7 +50,7 @@ module Jekyll
           :medium_image_url => item.get('MediumImage/URL').to_s,
           :large_image_url => item.get('LargeImage/URL').to_s,
         }
-        open(@site.config['amazon_cache_dir'] + asin, "w"){|f| f.write(Marshal.dump(data))}
+        open(@cache_dir + asin, "w"){|f| f.write(Marshal.dump(data))}
         @result_cache[asin] = data
         break
       end
@@ -51,23 +62,23 @@ module Jekyll
 
   module Filters
     def amazon_link(text)
-      AmazonResultCache.instance.set_site(@context)
+      AmazonResultCache.instance.setup(@context)
       item = AmazonResultCache.instance.item_lookup(text)
       url = item[:item_page_url]
       title = item[:title]
       '<a href="%s">%s</a>' % [url, title]
     end
 
-    #def amazon_authors(text)
-    #  #resp = AmazonResultCache.instance.item_lookup(text)
-    #  #item = resp.item_lookup_response[0].items[0].item[0]
-    #  item = AmazonResultCache.instance.item_lookup(text)
-    #  authors = item.item_attributes.author.collect(&:to_s)
-    #  array_to_sentence_string(authors)
-    #end
+    def amazon_small_image(text)
+      AmazonResultCache.instance.setup(@context)
+      item = AmazonResultCache.instance.item_lookup(text)
+      url = item[:item_page_url]
+      image_url = item[:small_image_url]
+      '<a href="%s"><img src="%s" /></a>' % [url, image_url]
+    end
 
     def amazon_medium_image(text)
-      AmazonResultCache.instance.set_site(@context)
+      AmazonResultCache.instance.setup(@context)
       item = AmazonResultCache.instance.item_lookup(text)
       url = item[:item_page_url]
       image_url = item[:medium_image_url]
@@ -75,51 +86,11 @@ module Jekyll
     end
 
     def amazon_large_image(text)
-      AmazonResultCache.instance.set_site(@context)
+      AmazonResultCache.instance.setup(@context)
       item = AmazonResultCache.instance.item_lookup(text)
       url = item[:item_page_url]
       image_url = item[:large_image_url]
       '<a href="%s"><img src="%s" /></a>' % [url, image_url]
     end
-
-    def amazon_small_image(text)
-      AmazonResultCache.instance.set_site(@context)
-      item = AmazonResultCache.instance.item_lookup(text)
-      url = item[:item_page_url]
-      image_url = item[:small_image_url]
-      '<a href="%s"><img src="%s" /></a>' % [url, image_url]
-    end
-
-    #def amazon_release_date(text)
-    #  #resp = AmazonResultCache.instance.item_lookup(text)
-    #  #item = resp.item_lookup_response[0].items[0].item[0]
-    #  item = AmazonResultCache.instance.item_lookup(text)
-    #  item.item_attributes.theatrical_release_date.to_s
-    #end
-
-    ## Movie specific
-    #def amazon_actors(text)
-    #  #resp = AmazonResultCache.instance.item_lookup(text)
-    #  #item = resp.item_lookup_response[0].items[0].item[0]
-    #  item = AmazonResultCache.instance.item_lookup(text)
-    #  actors = item.item_attributes.actor.collect(&:to_s)
-    #  array_to_sentence_string(actors)
-    #end
-
-    #def amazon_director(text)
-    #  #resp = AmazonResultCache.instance.item_lookup(text)
-    #  #item = resp.item_lookup_response[0].items[0].item[0]
-    #  item = AmazonResultCache.instance.item_lookup(text)
-    #  item.item_attributes.director.to_s
-    #end
-
-    #def amazon_running_time(text)
-    #  #resp = AmazonResultCache.instance.item_lookup(text)
-    #  #item = resp.item_lookup_response[0].items[0].item[0]
-    #  item = AmazonResultCache.instance.item_lookup(text)
-    #  item.item_attributes.running_time.to_s + " minutes"
-    #end
-
   end
 end
-
