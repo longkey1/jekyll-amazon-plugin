@@ -1,8 +1,9 @@
 # Amazon Plugin for Octopress
+This  plugin is inspired [Amazon Liquid Filters for jekyll](http://base0.net/posts/amazon-liquid-filters-for-jekyll/).
 
-## Install
+## How to install
 
-### Install amazon-ecs by bundler
+### Get amazon-ecs
 
     cd /path/to/octopress
 
@@ -12,25 +13,24 @@
 
     bundle install --path vendor/bundle
 
-
-### Install amazon-ecs by bundler
+or by gem command
 
     gem install amazon-ecs
 
 
-### Download amazon_filter.rb
+### Get amazon_filter.rb
 
     cd plugins
-    wget https://raw.github.com/longkey1/liquid-amazon-plugin/master/amazon_filter.rb
+    wget https://raw.github.com/longkey1/octopress-amazon-plugin/master/amazon_filter.rb
 
 
-### Download amazon_filter.rb by git-submodule
+or by git-submodule
 
     cd /path/to/octopress
-    git submodule add git://github.com/longkey1/liquid-amazon-plugin.git plugins/amazon
+    git submodule add git://github.com/longkey1/octopress-amazon-plugin.git plugins/amazon
 
 
-### Edit _config.yml
+### Configuring
 
     vi /path/to/octopress/_config.yml
 
@@ -47,7 +47,7 @@
 
 ### Edit post file
 
-    {{ asin | amazon_small_image }}
-    {{ asin | amazon_medium_image }}
-    {{ asin | amazon_large_image }}
-    {{ asin | amazon_long }}
+    {{ "asin number" | amazon_small_image }}
+    {{ "asin number" | amazon_medium_image }}
+    {{ "asin number" | amazon_large_image }}
+    {{ "asin number" | amazon_link }}
