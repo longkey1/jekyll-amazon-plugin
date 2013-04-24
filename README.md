@@ -18,10 +18,10 @@ or by gem command
     gem install amazon-ecs
 
 
-### Get amazon_filter.rb
+### Get amazon_tab.rb
 
     cd plugins
-    wget https://raw.github.com/longkey1/octopress-amazon-plugin/master/amazon_filter.rb
+    wget https://raw.github.com/longkey1/octopress-amazon-plugin/master/amazon_tag.rb
 
 
 or by git-submodule
@@ -45,9 +45,12 @@ or by git-submodule
 
 ## Usage
 
-### Edit post file
+### Syntax:
 
-    {{ "asin number" | amazon_small_image }}
-    {{ "asin number" | amazon_medium_image }}
-    {{ "asin number" | amazon_large_image }}
-    {{ "asin number" | amazon_link }}
+    {% amazon [type] [asin] %}
+
+type: text, small_image, medium_image, large_image
+
+### Examples:
+
+    {% amazon large_image 4873113946 %}

@@ -78,37 +78,51 @@ module Jekyll
     private_class_method :new
   end
 
-  module Filters
-    def amazon_link(text)
-      AmazonResultCache.instance.setup(@context)
-      item = AmazonResultCache.instance.item_lookup(text)
+  class AmazonTag < Liquid::Tag
+
+    def initialize(name, params, token)
+      super
+      @params = params
+    end
+
+    def render(context)
+      if @params =~ /(?<type>(text|small_image|medium_image|large_image)\s+)(?<asin>\S+)/i
+        type = $~['type'].strip
+        asin = $~['asin'].strip.gsub(/"/, '')
+      else
+        raise "parametor error for amazon tag"
+      end
+
+      AmazonResultCache.instance.setup(context)
+      item = AmazonResultCache.instance.item_lookup(asin)
+      self.send(type, item)
+    end
+
+    def text(item)
       url = item[:item_page_url]
       title = item[:title]
       '<a href="%s">%s</a>' % [url, title]
     end
 
-    def amazon_small_image(text)
-      AmazonResultCache.instance.setup(@context)
-      item = AmazonResultCache.instance.item_lookup(text)
+    def small_image(item)
       url = item[:item_page_url]
       image_url = item[:small_image_url]
       '<a href="%s"><img src="%s" /></a>' % [url, image_url]
     end
 
-    def amazon_medium_image(text)
-      AmazonResultCache.instance.setup(@context)
-      item = AmazonResultCache.instance.item_lookup(text)
+    def medium_image(item)
       url = item[:item_page_url]
       image_url = item[:medium_image_url]
       '<a href="%s"><img src="%s" /></a>' % [url, image_url]
     end
 
-    def amazon_large_image(text)
-      AmazonResultCache.instance.setup(@context)
-      item = AmazonResultCache.instance.item_lookup(text)
+    def large_image(item)
       url = item[:item_page_url]
       image_url = item[:large_image_url]
       '<a href="%s"><img src="%s" /></a>' % [url, image_url]
     end
+
   end
+
 end
+Liquid::Template.register_tag('amazon', Jekyll::AmazonTag)
