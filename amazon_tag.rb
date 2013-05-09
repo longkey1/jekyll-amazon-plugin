@@ -88,13 +88,18 @@ module Jekyll
     def render(context)
       if @params =~ /(?<type>(text|small_image|medium_image|large_image)\s+)(?<asin>\S+)/i
         type = $~['type'].strip
-        asin = $~['asin'].strip.gsub(/"/, '')
+        asin = $~['asin'].strip.gsub(/"|&ldquo;|&rdquo;/, '')
       else
         raise "parametor error for amazon tag"
       end
 
       AmazonResultCache.instance.setup(context)
       item = AmazonResultCache.instance.item_lookup(asin)
+
+      if item.nil?
+        raise "item data empty asin %s" % [asin]
+      end
+
       self.send(type, item)
     end
 
