@@ -49,8 +49,22 @@ or by git-submodule
 
     {% amazon [type] [asin] %}
 
-type: text, small_image, medium_image, large_image
+type: text, small_image, medium_image, large_image, title, detail, image
 
-### Examples:
+### Usage Examples:
 
     {% amazon large_image 4873113946 %}
+    {% amazon detail 4873113946 %}
+    
+### Type detail:
+
+[type] detail display item with object layouted by css.
+If you want to use this option move `_amazon_tag.scss` file to `/path/to/octopress/sass` directory.
+
+    mv _amazon_tag.scss /path/to/octopress/sass
+
+    vi screen.scss
+
+    + @import "amazon-tag";
+
+    bundle exec rake generage

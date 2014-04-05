@@ -61,12 +61,17 @@ module Jekyll
       end
 
       res.items.each do |item|
+        element = item.get_element('ItemAttributes')
         data = {
           :title => item.get('ItemAttributes/Title').to_s.gsub(/ \[Blu-ray\]/, '').gsub(/ \(Ultimate Edition\)/, ''),
           :item_page_url => item.get('DetailPageURL').to_s,
           :small_image_url => item.get('SmallImage/URL').to_s,
           :medium_image_url => item.get('MediumImage/URL').to_s,
           :large_image_url => item.get('LargeImage/URL').to_s,
+          :author => element.get_array("Author").join(", "), 
+          :product_group => element.get("ProductGroup"), 
+          :manufacturer => element.get("Manufacturer"), 
+          :publication_date => element.get("PublicationDate"), 
         }
         @result_cache[asin] = data
         open(@cache_dir + asin, "w"){|f| f.write(Marshal.dump(data))} if @cache
@@ -86,7 +91,7 @@ module Jekyll
     end
 
     def render(context)
-      if @params =~ /(?<type>(text|small_image|medium_image|large_image)\s+)(?<asin>\S+)/i
+      if @params =~ /(?<type>(text|(small|large|medium)?_?image|detail|title)\s+)(?<asin>\S+)/i
         type = $~['type'].strip
         asin = $~['asin'].strip.gsub(/"|&ldquo;|&rdquo;/, '')
       else
@@ -103,28 +108,63 @@ module Jekyll
       self.send(type, item)
     end
 
-    def text(item)
+    def title(item)
       url = item[:item_page_url]
       title = item[:title]
       '<a href="%s">%s</a>' % [url, title]
     end
+    # for degression
+    alias text title
 
-    def small_image(item)
+    def image( item, size="medium" )
+      image_url = item["#{size}_image_url".to_sym]
       url = item[:item_page_url]
-      image_url = item[:small_image_url]
       '<a href="%s"><img src="%s" /></a>' % [url, image_url]
     end
 
-    def medium_image(item)
-      url = item[:item_page_url]
-      image_url = item[:medium_image_url]
-      '<a href="%s"><img src="%s" /></a>' % [url, image_url]
+    def self.define_image_methods( size )
+      define_method "#{size}_image".to_sym do |item|
+        image( item, size )
+      end
+    end
+    # make methos for degression 
+    define_image_methods "medium"
+    define_image_methods "small"
+    define_image_methods "large"
+
+    def check_param param
+      if param.nil? || param == "" then
+        return nil 
+      end
+      return param 
     end
 
-    def large_image(item)
+    def print_product_content( item, max_title_chars=nil) 
       url = item[:item_page_url]
-      image_url = item[:large_image_url]
-      '<a href="%s"><img src="%s" /></a>' % [url, image_url]
+      title = item[:title] 
+      unless max_title_chars.nil? then
+        title = title[0..max_title_chars] + "..." if title.length > max_title_chars
+      end
+      contents = { author: "著者:",
+                   publication_date: "出版日:",
+                   manufacturer: "出版社/メーカ",
+                   product_group: "カテゴリ"
+      } 
+      res = '<a href =%s>%s</a>' % [url, title]
+      res += '<p>'
+      contents.each do |key, value|
+        res += "#{value}\t#{item[key]}</br>" if check_param item[key] 
+      end
+      res += '</p>'
+    end
+
+    def detail(item)
+      res ='<div class=amazon_tag>'
+      res += '<a target="_blank" href="%s"><img src="%s"></img></a>' %
+        [item[:item_page_url], item[:medium_image_url] ]
+      res += '<div class="item_detail">'
+      res += print_product_content item, 40 
+      res += '</div>' * 2
     end
 
   end
