@@ -1,6 +1,5 @@
-# coding: utf-8
 require 'amazon/ecs'
-require 'pp'
+require 'i18n'
 
 module Jekyll
   class AmazonResultCache
@@ -37,6 +36,13 @@ module Jekyll
       @options[:AWS_access_key_id] = site.config['amazon_access_key_id']
       @options[:AWS_secret_key]    = site.config['amazon_secret_key']
       @options[:country]           = site.config['amazon_country']
+
+      #i18n
+      locale = 'en'
+      locale = site.config['amazon_locale'] if site.config['amazon_locale']
+      I18n.enforce_available_locales = false
+      I18n.locale = locale.to_sym
+      I18n.load_path = [File.expand_path(File.dirname(__FILE__)) + "/locale/#{locale}.yml"]
     end
 
     def item_lookup(asin)
@@ -138,10 +144,7 @@ module Jekyll
     end
 
     def check_param(param)
-      if param.blank? then
-        return nil
-      end
-
+      return nil unless param
       return param
     end
 
@@ -152,10 +155,10 @@ module Jekyll
         title = title[0..max_title_chars] + '...' if title.length > max_title_chars
       end
       contents = {
-        author: '著者:',
-        publication_date: '出版日:',
-        manufacturer: '出版社/メーカ',
-        product_group: 'カテゴリ'
+        author: I18n.t('author') + ':',
+        publication_date: I18n.t('publication date') + ':',
+        manufacturer: I18n.t('manufacturer') + ':',
+        product_group: I18n.t('product group') + ':',
       }
       res = '<a href="%s">%s</a>' % [url, title]
       res += '<p>'

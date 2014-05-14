@@ -10,12 +10,13 @@ This  plugin is inspired [Amazon Liquid Filters for jekyll](http://base0.net/pos
     vi Gemfile
 
     + gem 'amazon-ecs'
+    + gem 'i18n'
 
     bundle install --path vendor/bundle
 
 or by gem command
 
-    gem install amazon-ecs
+    gem install amazon-ecs i18n
 
 
 ### Get amazon_tab.rb
@@ -41,6 +42,7 @@ or by git-submodule
     + amazon_cache:         false # or true
     + amazon_cache_dir:     '.amazon-cache'      # default '.amazon-cache'
     + amazon_country:       'jp'                 # default 'en'
+    + amazon_local:         'ja'                 # default 'en'
 
 
 ## Usage
@@ -55,7 +57,7 @@ type: text, small_image, medium_image, large_image, title, detail, image
 
     {% amazon large_image 4873113946 %}
     {% amazon detail 4873113946 %}
-    
+
 ### Type detail:
 
 [type] detail display item with object layouted by css.
