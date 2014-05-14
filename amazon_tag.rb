@@ -8,7 +8,7 @@ module Jekyll
       @result_cache = {}
 
       @cache = false
-      @cache_dir = ".amazon-cache/"
+      @cache_dir = '.amazon-cache/'
       @options = {
         :associate_tag     => nil,
         :AWS_access_key_id => nil,
@@ -54,7 +54,7 @@ module Jekyll
         if /503/ =~ e.message && recnt < 3
           sleep 3
           recnt += 1
-          puts asin + " retry " + recnt.to_s
+          puts asin + ' retry ' + recnt.to_s
           retry
         else
           raise e
@@ -69,13 +69,13 @@ module Jekyll
           :small_image_url => item.get('SmallImage/URL').to_s,
           :medium_image_url => item.get('MediumImage/URL').to_s,
           :large_image_url => item.get('LargeImage/URL').to_s,
-          :author => element.get_array("Author").join(", "),
-          :product_group => element.get("ProductGroup"),
-          :manufacturer => element.get("Manufacturer"),
-          :publication_date => element.get("PublicationDate"),
+          :author => element.get_array('Author').join(', '),
+          :product_group => element.get('ProductGroup'),
+          :manufacturer => element.get('Manufacturer'),
+          :publication_date => element.get('PublicationDate'),
         }
         @result_cache[asin] = data
-        open(@cache_dir + asin, "w"){|f| f.write(Marshal.dump(data))} if @cache
+        open(@cache_dir + asin, 'w'){|f| f.write(Marshal.dump(data))} if @cache
         break
       end
       return @result_cache[asin]
@@ -89,6 +89,9 @@ module Jekyll
     def initialize(name, params, token)
       super
       @params = params
+
+      # make image alias methods for degression
+      make_image_alias_methods
     end
 
     def render(context)
@@ -96,7 +99,7 @@ module Jekyll
         type = $~['type'].strip
         asin = $~['asin'].strip.gsub(/"|&ldquo;|&rdquo;/, '')
       else
-        raise "parametor error for amazon tag"
+        raise 'parametor error for amazon tag'
       end
 
       AmazonResultCache.instance.setup(context)
@@ -117,41 +120,44 @@ module Jekyll
     # for degression
     alias text title
 
-    def image( item, size="medium" )
+    def image(item, size = 'medium')
       image_url = item["#{size}_image_url".to_sym]
       url = item[:item_page_url]
       '<a href="%s"><img src="%s" /></a>' % [url, image_url]
     end
 
-    def self.define_image_methods( size )
-      define_method "#{size}_image".to_sym do |item|
-        image( item, size )
+    def make_image_alias_methods
+      for size in ['small', 'medium', 'large'] do
+        method = "#{size}_image".to_sym
+        AmazonTag.class_eval do
+          define_method(method) do |item|
+            image(item, size)
+          end
+        end
       end
     end
-    # make methos for degression
-    define_image_methods "medium"
-    define_image_methods "small"
-    define_image_methods "large"
 
-    def check_param param
-      if param.nil? || param == "" then
+    def check_param(param)
+      if param.blank? then
         return nil
       end
+
       return param
     end
 
-    def print_product_content( item, max_title_chars=nil)
+    def print_product_content(item, max_title_chars = nil)
       url = item[:item_page_url]
       title = item[:title]
       unless max_title_chars.nil? then
-        title = title[0..max_title_chars] + "..." if title.length > max_title_chars
+        title = title[0..max_title_chars] + '...' if title.length > max_title_chars
       end
-      contents = { author: "著者:",
-                   publication_date: "出版日:",
-                   manufacturer: "出版社/メーカ",
-                   product_group: "カテゴリ"
+      contents = {
+        author: '著者:',
+        publication_date: '出版日:',
+        manufacturer: '出版社/メーカ',
+        product_group: 'カテゴリ'
       }
-      res = '<a href =%s>%s</a>' % [url, title]
+      res = '<a href="%s">%s</a>' % [url, title]
       res += '<p>'
       contents.each do |key, value|
         res += "#{value}\t#{item[key]}</br>" if check_param item[key]
@@ -167,8 +173,7 @@ module Jekyll
       res += print_product_content item, 40
       res += '</div>' * 2
     end
-
   end
-
 end
+
 Liquid::Template.register_tag('amazon', Jekyll::AmazonTag)
