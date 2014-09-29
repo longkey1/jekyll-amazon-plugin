@@ -1,11 +1,11 @@
-# Amazon Plugin for Octopress
+# Amazon Plugin for Jekyll
 This  plugin is inspired [Amazon Liquid Filters for jekyll](http://base0.net/posts/amazon-liquid-filters-for-jekyll/).
 
 ## How to install
 
-### Get amazon-ecs
+### Get dependency package
 
-    cd /path/to/octopress
+    cd /path/to/jekyll
 
     vi Gemfile
 
@@ -16,24 +16,24 @@ This  plugin is inspired [Amazon Liquid Filters for jekyll](http://base0.net/pos
 
 or by gem command
 
-    gem install amazon-ecs i18n
+    gem install stringex
 
 
 ### Get amazon_tab.rb
 
     cd plugins
-    wget https://raw.github.com/longkey1/octopress-amazon-plugin/master/amazon_tag.rb
+    wget https://raw.github.com/longkey1/jekyll-amazon-plugin/master/amazon_tag.rb
 
 
 or by git-submodule
 
-    cd /path/to/octopress
-    git submodule add git://github.com/longkey1/octopress-amazon-plugin.git plugins/amazon
+    cd /path/to/jekyll
+    git submodule add git://github.com/longkey1/jekyll-amazon-plugin.git _plugins/amazon
 
 
 ### Configuring
 
-    vi /path/to/octopress/_config.yml
+    vi /path/to/jekyll/_config.yml
 
     + # Amazon plugin
     + amazon_access_key_id: 'your access key id'
@@ -61,12 +61,12 @@ type: text, small_image, medium_image, large_image, title, detail, image
 ### Type detail:
 
 [type] detail display item with object layouted by css.
-If you want to use this option move `_amazon_tag.scss` file to `/path/to/octopress/sass` directory.
+If you want to use this option move `_amazon_tag.scss` file to `/path/to/jekyll/_sass` directory.
 
-    mv _amazon_tag.scss /path/to/octopress/sass
+    mv _amazon_tag.scss /path/to/jekyll/sass
 
-    vi screen.scss
+    vi main.scss
 
     + @import "amazon-tag";
 
-    bundle exec rake generage
+    jekyll build
