@@ -42,7 +42,7 @@ or by git-submodule
     + amazon_cache:         false # or true
     + amazon_cache_dir:     '.amazon-cache'      # default '.amazon-cache'
     + amazon_country:       'jp'                 # default 'en'
-    + amazon_local:         'ja'                 # default 'en'
+    + amazon_locale:        'ja'                 # default 'en'
 
 
 ## Usage
