@@ -53,7 +53,7 @@ module Jekyll
 
       recnt = 0
       begin
-        res = Amazon::Ecs.item_lookup(asin)
+        res = Amazon::Ecs.item_search(asin, search_index: 'All')
 
       #Liquid Exception HTTP Response: 503 Service Unavailable
       rescue Amazon::RequestError => e
