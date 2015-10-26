@@ -11,12 +11,9 @@ This  plugin is inspired [Amazon Liquid Filters for jekyll](http://base0.net/pos
 
     + gem 'amazon-ecs'
     + gem 'i18n'
+    + gem 'jekyll'
 
     bundle install --path vendor/bundle
-
-or by gem command
-
-    gem install stringex
 
 
 ### Get amazon_tab.rb
@@ -41,7 +38,7 @@ or by git-submodule
     + amazon_associate_tag: 'your associate'
     + amazon_cache:         false # or true
     + amazon_cache_dir:     '.amazon-cache'      # default '.amazon-cache'
-    + amazon_country:       'jp'                 # default 'en'
+    + amazon_country:       'jp'                 # default 'us'
     + amazon_locale:        'ja'                 # default 'en'
 
 
@@ -61,7 +58,7 @@ type: text, small_image, medium_image, large_image, title, detail, image
 ### Type detail:
 
 [type] detail display item with object layouted by css.
-If you want to use this option move `_amazon_tag.scss` file to `/path/to/jekyll/_sass` directory.
+If you want to use this option move `_amazon-tag.scss` file to `/path/to/jekyll/_sass` directory.
 
     mv _amazon_tag.scss /path/to/jekyll/sass
 
