@@ -163,14 +163,14 @@ module Jekyll
       res = '<a href="%s">%s</a>' % [url, title]
       res += '<p>'
       contents.each do |key, value|
-        res += "#{value}\t#{item[key]}</br>" if check_param item[key]
+        res += "#{value}\t#{item[key]}<br />" if check_param item[key]
       end
       res += '</p>'
     end
 
     def detail(item)
-      res ='<div class=amazon_tag>'
-      res += '<a target="_blank" href="%s"><img src="%s"></img></a>' %
+      res ='<div class="amazon_tag">'
+      res += '<a target="_blank" href="%s"><img src="%s" /></a>' %
         [item[:item_page_url], item[:medium_image_url] ]
       res += '<div class="item_detail">'
       res += print_product_content item, 40
