@@ -16,7 +16,7 @@ This  plugin is inspired [Amazon Liquid Filters for jekyll](http://base0.net/pos
     bundle install --path vendor/bundle
 
 
-### Get amazon_tab.rb
+### Get amazon_tag.rb
 
     cd plugins
     wget https://raw.github.com/longkey1/jekyll-amazon-plugin/master/amazon_tag.rb
