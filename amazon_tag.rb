@@ -135,10 +135,9 @@ module Jekyll
     def make_image_alias_methods
       for size in ['small', 'medium', 'large'] do
         method = "#{size}_image".to_sym
-        AmazonTag.class_eval do
-          define_method(method) do |item|
-            image(item, size)
-          end
+        self.class.send(:define_method, method) do |item|
+          size = __method__.to_s.sub(/_image/, '')
+          image(item, size)
         end
       end
     end
